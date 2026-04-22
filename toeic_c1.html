@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced TOEIC Practice: C1-C2 Level</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --success: #10b981;
+            --error: #ef4444;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            padding: 2.5rem;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.8rem;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .progress {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+            font-weight: 500;
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            color: #0f172a;
+        }
+
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .choice-btn {
+            background: var(--card-bg);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            font-size: 1.05rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .choice-btn:hover:not(:disabled) {
+            border-color: var(--primary);
+            background: #eff6ff;
+        }
+
+        .choice-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        .choice-btn.correct {
+            background-color: #ecfdf5;
+            border-color: var(--success);
+            color: #065f46;
+        }
+
+        .choice-btn.wrong {
+            background-color: #fef2f2;
+            border-color: var(--error);
+            color: #991b1b;
+        }
+
+        .analysis-box {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border-radius: 8px;
+            background: #f8fafc;
+            border-left: 4px solid var(--primary);
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .analysis-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .analysis-content {
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .trick-box {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            padding: 1rem;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            color: #92400e;
+        }
+
+        .trick-box strong {
+            color: #b45309;
+        }
+
+        .next-btn {
+            display: none;
+            width: 100%;
+            margin-top: 1.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .next-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+        }
+
+        .score-display {
+            font-size: 4rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 1rem 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app">
+    <div id="quiz-screen">
+        <h1>C1-C2 English Proficiency</h1>
+        <div class="progress" id="progress">Question 1 of 10</div>
+        
+        <div class="question-text" id="question">Loading...</div>
+        <div class="choices" id="choices"></div>
+        
+        <div class="analysis-box" id="analysis">
+            <div class="analysis-title" id="analysis-title"></div>
+            <div class="analysis-content" id="analysis-desc"></div>
+            <div class="trick-box" id="analysis-trick"></div>
+        </div>
+
+        <button class="next-btn" id="next-btn" onclick="nextQuestion()">ต่อไป</button>
+    </div>
+
+    <div class="result-screen" id="result-screen">
+        <h1>Test Completed!</h1>
+        <div class="score-display" id="final-score">0/10</div>
+        <p>การฝึกฝนอย่างสม่ำเสมอจะช่วยให้คุณวิเคราะห์โครงสร้าง C1-C2 ได้เฉียบคมขึ้น</p>
+        <button class="next-btn" style="display: block; margin-top: 2rem;" onclick="location.reload()">ทำข้อสอบชุดใหม่ (สุ่มใหม่ 10 ข้อ)</button>
+    </div>
+</div>
+
+<script>
+    // ข้อมูลข้อสอบ 50 ข้อ ระดับ C1-C2 (Articles, Prepositions, Conjunctions) 
+    // เน้นบริบทธุรกิจ, สายการบิน, และการตลาด
+    const allQuestions = [
+        // --- Articles (1-16) ---
+        {
+            q: "The airline implemented such ___ sweeping change across its ground handling protocols that productivity doubled.",
+            c: ["a", "an", "the", "no article"],
+            a: 0,
+            exp: "ใช้ 'a' เพราะ 'sweeping change' เป็นเอกพจน์นับได้และไม่ได้เจาะจงว่าเป็นความเปลี่ยนแปลงอันไหนโดยเฉพาะ โครงสร้าง such + a/an + adj + singular noun เป็นโครงสร้างขั้นสูงที่เจอบ่อย",
+            trick: "ทริค: ถ้าเจอ 'such' นำหน้าคำนามเอกพจน์นับได้ (change) ต้องตามด้วย a/an เสมอ เช่น such a beautiful day, such a sweeping change."
+        },
+        {
+            q: "___ CEO demands absolute discretion regarding the upcoming merger with the regional carrier.",
+            c: ["A", "An", "The", "No article"],
+            a: 2,
+            exp: "ใช้ 'The' เพราะตำแหน่ง CEO ในบริษัทหนึ่งๆ มีเพียงคนเดียว (Unique role) บริบทนี้ผู้พูดและผู้ฟังรู้กันดีว่าหมายถึง CEO ของบริษัทใด",
+            trick: "ทริค: ตำแหน่งระดับสูงที่มีคนเดียวในองค์กร (CEO, President) หรือสิ่งที่มีสิ่งเดียวในบริบทนั้น ให้ใช้ 'The' นำหน้าเสมอ"
+        },
+        {
+            q: "The success of the marketing campaign depends largely on ___ consumer behavior in the Asian market.",
+            c: ["a", "an", "the", "no article"],
+            a: 3,
+            exp: "ใช้ No article (Zero article) เพราะ 'consumer behavior' เป็นคำนามนับไม่ได้ (Uncountable Noun) ที่พูดถึงในเชิงทั่วไป (พฤติกรรมผู้บริโภคโดยรวม) ไม่ได้ชี้เฉพาะเจาะจง",
+            trick: "ทริค: คำนามนามธรรม (Abstract nouns) หรือคำนามนับไม่ได้ หากพูดถึงในความหมายกว้างๆ ทั่วไป ไม่ต้องมี Article นำหน้า"
+        },
+        {
+            q: "It is considered ___ honor to be selected to host the annual aviation safety seminar.",
+            c: ["a", "an", "the", "no article"],
+            a: 1,
+            exp: "ใช้ 'an' เพราะ 'honor' แม้จะขึ้นต้นด้วยพยัญชนะ (h) แต่ไม่ออกเสียง h (Silent H) ทำให้อ่านออกเสียงเป็นสระ (ออ-เนอร์) จึงต้องใช้ an",
+            trick: "ทริค: ระวังคำหลอกตา! honor, honest, hour, heir ตัว h ไม่ออกเสียง ให้ยึดเสียงอ่านเป็นหลัก จึงต้องใช้ 'an'"
+        },
+        {
+            q: "We need to ensure that ___ luggage unloaded from Flight 808 is transferred to the carousel immediately.",
+            c: ["a", "an", "the", "no article"],
+            a: 2,
+            exp: "ใช้ 'the' เพราะเป็นการชี้เฉพาะเจาะจงไปที่สัมภาระ 'ที่ถูกขนลงจากเที่ยวบิน 808' ไม่ใช่สัมภาระทั่วไป",
+            trick: "ทริค: สังเกตส่วนขยายด้านหลัง (unloaded from Flight 808) ถ้ามีวลีมาขยายให้คำนามนั้นแคบลงหรือชี้เฉพาะ ให้ฟันธงใช้ 'the'"
+        },
+        {
+            q: "Due to the unexpected strike, the departure was delayed by half ___ hour.",
+            c: ["a", "an", "the", "no article"],
+            a: 1,
+            exp: "ใช้ 'an' เพราะ hour ออกเสียงสระ (อาว-เออร์) โครงสร้าง 'half an hour' (ครึ่งชั่วโมง) เป็น Collocation ที่ตายตัว",
+            trick: "ทริค: จำเป็นแพทเทิร์นไปเลย 'half an hour' (ครึ่งชั่วโมง) ไม่ใช้ half a hour เด็ดขาด"
+        },
+        {
+            q: "The passenger service agent handled the irate customer with ___ extraordinary patience.",
+            c: ["a", "an", "the", "no article"],
+            a: 3,
+            exp: "ใช้ No article เพราะ 'patience' (ความอดทน) เป็นนามนับไม่ได้และเป็นนามธรรม (Abstract noun) แม้จะมี adjective (extraordinary) มาขยายก็ไม่ใส่ article หากพูดในเชิงทั่วไป",
+            trick: "ทริค: นามธรรม (Abstract Nouns) เช่น patience, intelligence, knowledge ถ้าไม่ชี้เฉพาะ ไม่ต้องใส่ a/an/the แม้จะมี Adjective นำหน้าก็ตาม"
+        },
+        {
+            q: "To become a ground operations manager, one must have ___ extensive knowledge of aviation regulations.",
+            c: ["a", "an", "the", "no article"],
+            a: 3,
+            exp: "ใช้ No article เพราะ 'knowledge' เป็นคำนามนับไม่ได้ (Uncountable noun) อย่างไรก็ตาม ในภาษาอังกฤษบริติชอาจพบโครงสร้าง 'have a (good/extensive) knowledge of' ได้ แต่ในหลักแกรมม่ามาตรฐาน C1/C2 ของ TOEIC (American) มักมอง knowledge เป็นนามนับไม่ได้ล้วนๆ",
+            trick: "ทริค: ข้อนี้ปราบเซียน 'knowledge' นับไม่ได้ ไม่เติม a/an/s แต่ถ้าเจอ 'a working knowledge of' ถือเป็นข้อยกเว้นที่เป็น Idiom"
+        },
+        {
+            q: "We are currently looking for ___ experienced PR executive to rebrand our corporate identity.",
+            c: ["a", "an", "the", "no article"],
+            a: 1,
+            exp: "ใช้ 'an' เพราะต้องการ PR executive แค่ 1 คน (ยังไม่เจาะจงว่าเป็นใคร แค่ต้องการคนที่อยู่ในกลุ่มคนที่มีประสบการณ์) และ experienced ขึ้นต้นด้วยเสียงสระ",
+            trick: "ทริค: โครงสร้าง look for + a/an + อาชีพ/ตำแหน่ง (ที่ยังไม่ระบุตัวตน) ถ้าคำคุณศัพท์ข้างหน้าขึ้นต้นด้วยเสียง A E I O U ให้ใช้ an"
+        },
+        {
+            q: "___ information provided by the shift supervisor was crucial in preventing the runway incursion.",
+            c: ["A", "An", "The", "No article"],
+            a: 2,
+            exp: "ใช้ 'The' เพราะมีการขยายความชัดเจนว่าไม่ใช่ข้อมูลทั่วไป แต่เป็นข้อมูล 'ที่ให้โดยหัวหน้ากะ' (provided by the shift supervisor)",
+            trick: "ทริค: คำว่า information นับไม่ได้ห้ามใช้ a/an เด็ดขาด และเมื่อมีส่วนขยายมาบอกว่าของใคร/จากใคร ให้ใส่ The ทันที"
+        },
+        {
+            q: "As part of the community development initiative, we are building ___ university in the rural area.",
+            c: ["a", "an", "the", "no article"],
+            a: 0,
+            exp: "ใช้ 'a' แม้ university จะขึ้นต้นด้วยตัว u แต่เวลาออกเสียงคือตัว ย.ยักษ์ (ยู-นิ-เวอ-ซิ-ตี้) ซึ่งเป็นเสียงพยัญชนะ",
+            trick: "ทริค: คำหลอกหมวดสระ u/eu เช่น university, European, unique, uniform ออกเสียง 'ยู' (พยัญชนะ) ต้องใช้ 'a' ห้ามใช้ 'an'"
+        },
+        {
+            q: "Before launching the product, the marketing team conducted ___ thorough market research.",
+            c: ["a", "an", "the", "no article"],
+            a: 3,
+            exp: "ใช้ No article เพราะ 'research' (งานวิจัย) ในภาษาอังกฤษถือเป็นคำนามนับไม่ได้ (Uncountable noun) ห้ามเติม a/an หรือ -s",
+            trick: "ทริค: คำว่า research ห้ามใช้ a research หรือ researches เด็ดขาด! ถ้าอยากนับให้ใช้ a piece of research"
+        },
+        {
+            q: "Is there ___ specific reason why the boarding gate was changed at the very last minute?",
+            c: ["a", "an", "the", "no article"],
+            a: 0,
+            exp: "ใช้ 'a' เพราะ reason เป็นเอกพจน์นับได้ ประโยคนี้แปลว่า 'มีเหตุผลเฉพาะเจาะจงสักเหตุผลหนึ่งไหม' (Any single reason)",
+            trick: "ทริค: โครงสร้าง Is there + a + singular noun? ใช้ถามเพื่อหาว่ามีสิ่งนั้นอยู่ไหม (ยังไม่ได้เจาะจงว่าเหตุผลคืออะไร)"
+        },
+        {
+            q: "The VIP lounge is strictly reserved for passengers traveling in ___ First Class.",
+            c: ["a", "an", "the", "no article"],
+            a: 3,
+            exp: "ใช้ No article เมื่อพูดถึง Class ของการเดินทาง (First Class, Business Class, Economy Class) ถือเป็นชื่อเฉพาะที่ทำหน้าที่เหมือน Adjective หรือหมวดหมู่ ไม่ต้องใส่ Article",
+            trick: "ทริค: การเดินทางด้วยชั้นต่างๆ (travel in Business Class, fly Economy) เป็นสำนวนตายตัวที่ไม่ต้องใส่ a/an/the"
+        },
+        {
+            q: "Could you pass me ___ tablet that I left on the counter near the check-in desk?",
+            c: ["a", "an", "the", "no article"],
+            a: 2,
+            exp: "ใช้ 'the' เพราะผู้พูดเจาะจงแท็บเล็ตเครื่องที่ 'ฉันวางทิ้งไว้บนเคาน์เตอร์' ผู้ฟังรู้ว่าหมายถึงเครื่องไหน",
+            trick: "ทริค: มี that-clause มาขยายเพื่อระบุชี้ชัด (that I left...) ให้ใช้ The ทันที"
+        },
+        {
+            q: "The newly hired intern has ___ excellent understanding of cross-cultural communication.",
+            c: ["a", "an", "the", "no article"],
+            a: 1,
+            exp: "ใช้ 'an' โครงสร้าง 'have an understanding of' เป็นสำนวน (Idiom) แม้ understanding จะดูเหมือนนับไม่ได้ แต่ในสำนวนแปลว่า 'มีความเข้าใจในระดับหนึ่ง' จะใช้ a/an ตาม adjective ที่มาขยาย",
+            trick: "ทริค: จำสำนวน have a basic understanding of / have an excellent understanding of ไว้ใช้ตอบได้เลย"
+        },
+
+        // --- Prepositions in, on, at (17-33) ---
+        {
+            q: "The success of our digital marketing campaign is largely contingent ___ user engagement metrics.",
+            c: ["in", "on", "at", "to"],
+            a: 1,
+            exp: "ใช้ 'on' คำว่า contingent (ขึ้นอยู่กับ) เป็น Adjective ระดับ C1 ที่ต้องใช้คู่กับบุพบท 'on' (contingent on / upon) เหมือนกับ depend on",
+            trick: "ทริค: จำคู่คำศัพท์ระดับสูง: contingent on, dependent on, reliant on ล้วนแปลว่า 'ขึ้นอยู่กับ' ใช้ on ทั้งหมด"
+        },
+        {
+            q: "Please ensure that the quarterly financial report is submitted ___ the end of the month.",
+            c: ["in", "on", "at", "by"],
+            a: 2,
+            exp: "ใช้ 'at' โครงสร้าง 'at the end of (something)' หมายถึง 'ตอนสิ้นสุดของสิ่งนั้น' (เช่น ปลายเดือน ปลายปี)",
+            trick: "ทริค: แยกให้ออกระหว่าง 'in the end' = ในท้ายที่สุด/บทสรุป (ไม่มี of ตามหลัง) กับ 'at the end of...' = ตอนสิ้นสุดของ... (เวลา/สถานที่)"
+        },
+        {
+            q: "The board of directors is scheduled to hold an emergency meeting ___ Tuesday morning.",
+            c: ["in", "on", "at", "during"],
+            a: 1,
+            exp: "ใช้ 'on' เพราะมีคำว่า 'Tuesday' (วัน) นำหน้า แม้จะมีคำว่า morning ตามหลัง กฎคือถ้าระบุวันในสัปดาห์ให้ยึด 'on' เป็นหลัก",
+            trick: "ทริค: in the morning (ไม่มีวัน), แต่ถ้ามีวันมาแปะ on Monday morning, on Friday night ให้ใช้ 'on' ทันที"
+        },
+        {
+            q: "The newly promoted manager excels ___ resolving interpersonal conflicts among team members.",
+            c: ["in", "on", "at", "with"],
+            a: 2,
+            exp: "ใช้ 'at' คำกริยา excel (ทำได้ดีเยี่ยม) ต้องใช้คู่กับบุพบท 'at' เสมอ (excel at something / excel at doing something)",
+            trick: "ทริค: จำคู่กริยา: good at, bad at, excel at, proficient at (เก่ง/ชำนาญในเรื่อง...) ใช้ at ทั้งหมด"
+        },
+        {
+            q: "The passenger became extremely aggressive and started shouting ___ the gate agent.",
+            c: ["in", "on", "at", "to"],
+            a: 2,
+            exp: "ใช้ 'at' กริยา shout at หมายถึง ตะโกนใส่ (ด้วยความโกรธ) ซึ่งต่างจาก shout to (ตะโกนเรียกให้ได้ยิน)",
+            trick: "ทริค: พฤติกรรมที่พุ่งเป้าไปหาคนอื่นในแง่ลบมักใช้ at เช่น shout at (ตะโกนใส่), swear at (ด่าทอ), glare at (จ้องเขม็ง)"
+        },
+        {
+            q: "All employees must assemble ___ the main concourse in the event of a fire evacuation.",
+            c: ["in", "on", "at", "into"],
+            a: 2,
+            exp: "ใช้ 'at' เมื่อพูดถึงสถานที่ที่เป็นจุดนัดพบ หรือจุดใดจุดหนึ่งในพื้นที่กว้างใหญ่ (at the concourse, at the reception desk)",
+            trick: "ทริค: 'at' ใช้กับจุด (Point) 'in' ใช้กับพื้นที่ที่มีขอบเขตล้อมรอบ (Enclosed space) ในที่นี้ระบุเป็นจุดรวมพลจึงใช้ at"
+        },
+        {
+            q: "The discrepancy ___ the inventory records and the actual stock must be investigated immediately.",
+            c: ["in", "on", "at", "between"],
+            a: 0,
+            exp: "ใช้ 'in' คำว่า discrepancy (ความคลาดเคลื่อน) มักใช้คู่กับ in (discrepancy in something = ความคลาดเคลื่อนในเรื่อง...)",
+            trick: "ทริค: ข้อนี้อาจหลอกให้ตอบ between แต่โครงสร้างคือ 'discrepancy IN the records' (ความผิดปกติในบันทึก)"
+        },
+        {
+            q: "We apologize for the inconvenience; the executive lounge is currently ___ renovation.",
+            c: ["in", "on", "under", "at"],
+            a: 2,
+            exp: "ใช้ 'under' โครงสร้าง 'under renovation' (อยู่ระหว่างการปรับปรุง) เป็นสำนวนมาตรฐานในเชิงธุรกิจและสถานที่",
+            trick: "ทริค: คำว่า under มักใช้กับสถานะที่กำลังดำเนินการ เช่น under construction, under investigation, under pressure"
+        },
+        {
+            q: "The regional manager congratulated the sales team ___ exceeding their annual targets.",
+            c: ["in", "on", "at", "for"],
+            a: 1,
+            exp: "ใช้ 'on' กริยา congratulate (แสดงความยินดี) ต้องตามด้วยบุพบท 'on' เสมอ (congratulate someone ON something)",
+            trick: "ทริค: คนไทยชอบแปลว่า 'ยินดีด้วยสำหรับ...' แล้วเผลอไปตอบ for แต่แกรมม่าที่ถูกต้องคือ congratulate ON"
+        },
+        {
+            q: "Passengers are strictly prohibited from using cellular devices while the aircraft is ___ motion.",
+            c: ["in", "on", "at", "with"],
+            a: 0,
+            exp: "ใช้ 'in' โครงสร้าง 'in motion' (กำลังเคลื่อนที่) เป็นสำนวนตายตัวที่พบบ่อยในกฎระเบียบความปลอดภัย",
+            trick: "ทริค: จำเป็นวลี 'in motion' = ขยับ/เคลื่อนที่ ตรงข้ามกับ 'at rest' = หยุดนิ่ง"
+        },
+        {
+            q: "The catering company operates ___ the premise that high-quality ingredients yield the best meals.",
+            c: ["in", "on", "at", "under"],
+            a: 1,
+            exp: "ใช้ 'on' วลี operate on the premise (ทำงานภายใต้สมมติฐาน/หลักการที่ว่า...) เป็นสำนวนระดับ C1 ในเชิงธุรกิจ",
+            trick: "ทริค: คำว่า premise (สมมติฐานหลักการ) ใช้กับ on เสมอ (on the premise that...)"
+        },
+        {
+            q: "Please have your boarding pass ready; we will commence boarding ___ exactly 15 minutes.",
+            c: ["in", "on", "at", "for"],
+            a: 0,
+            exp: "ใช้ 'in' เมื่อแปลว่า 'ภายใน (อีก...นาทีข้างหน้า)' เพื่อบอกเวลาที่จะเกิดขึ้นในอนาคต (in 15 minutes = อีก 15 นาทีจะเริ่ม)",
+            trick: "ทริค: ถ้าพูดถึงเวลาในอนาคตว่าจะเกิดขึ้นในอีกเท่าไหร่ ให้ใช้ IN (in 5 minutes, in 2 days) ห้ามใช้ after"
+        },
+        {
+            q: "The corporate headquarters is situated ___ the outskirts of the metropolitan area.",
+            c: ["in", "on", "at", "by"],
+            a: 1,
+            exp: "ใช้ 'on' คำว่า outskirts (ชานเมือง) ต้องใช้คู่กับ on เสมอ (on the outskirts)",
+            trick: "ทริค: จำความแตกต่าง: in the city center (ในใจกลางเมือง), in the suburbs (ในเขตชานเมือง), แต่ ON the outskirts (ที่ขอบนอกเมือง)"
+        },
+        {
+            q: "The ground staff was praised for dealing with the complex itinerary ___ such short notice.",
+            c: ["in", "on", "at", "with"],
+            a: 1,
+            exp: "ใช้ 'on' สำนวน 'on short notice' หรือ 'at short notice' เป็นไปได้ทั้งคู่ แต่ในฝั่ง American English (TOEIC) นิยมใช้ 'on short notice' (แบบกะทันหัน)",
+            trick: "ทริค: on short notice = แจ้งล่วงหน้าในเวลาอันสั้น/กระชั้นชิด เป็นสำนวนที่เจอบ่อยมากในข้อสอบพาร์ทอีเมล"
+        },
+        {
+            q: "The new aviation protocol is entirely ___ odds with the regulations established last year.",
+            c: ["in", "on", "at", "to"],
+            a: 2,
+            exp: "ใช้ 'at' สำนวน 'at odds with' เป็นระดับ C1 แปลว่า ขัดแย้งกับ ไม่สอดคล้องกัน",
+            trick: "ทริค: เจอคำว่า odds ในเชิงความขัดแย้ง ให้ใช้ 'at' (at odds with) เสมอ"
+        },
+        {
+            q: "___ behalf of the entire flight crew, I would like to welcome you aboard Flight 104 to Paris.",
+            c: ["In", "On", "At", "From"],
+            a: 1,
+            exp: "ใช้ 'On' สำนวน 'On behalf of' แปลว่า ในนามของ (เป็นตัวแทนของ) เป็นประโยคบังคับสำหรับสคริปต์ลูกเรือ",
+            trick: "ทริค: On behalf of = ในฐานะตัวแทนของ, แต่ In behalf of (อเมริกัน) = เพื่อผลประโยชน์ของ... บริบทนี้คือการเป็นตัวแทนพูด จึงใช้ On"
+        },
+        {
+            q: "The airline's shares plummeted following the rumor that they were ___ the verge of bankruptcy.",
+            c: ["in", "on", "at", "to"],
+            a: 1,
+            exp: "ใช้ 'on' วลี 'on the verge of' (ใกล้จะ...เต็มที / อยู่ริมขอบ) เป็น Idiom ขั้นสูงที่พบบ่อยในข่าวธุรกิจ",
+            trick: "ทริค: on the verge of, on the brink of, on the edge of ทั้งหมดแปลว่า 'ใกล้จะ...' ใช้ On นำหน้าทั้งหมด"
+        },
+
+        // --- Conjunctions (34-50) ---
+        {
+            q: "___ had the ground operations manager approved the load sheet than the aircraft doors were sealed.",
+            c: ["Hardly", "No sooner", "Scarcely", "As soon as"],
+            a: 1,
+            exp: "ใช้ 'No sooner' นี่คือโครงสร้าง Inversion (การสลับที่) ระดับ C2 สังเกตคำว่า 'than' ในประโยค No sooner ต้องคู่กับ than เสมอ (แปลว่า ทันทีที่...ก็...)",
+            trick: "ทริค: จับคู่ Inversion ให้แม่น: No sooner + had + S + V3 ... THAN ... / Hardly (หรือ Scarcely) + had + S + V3 ... WHEN ..."
+        },
+        {
+            q: "The passengers remained calm ___ the severe turbulence experienced during the descent.",
+            c: ["although", "despite", "even though", "while"],
+            a: 1,
+            exp: "ใช้ 'despite' เพราะตามด้วยกลุ่มคำนาม (the severe turbulence...) ไม่ใช่ประโยค (Subject + Verb) although/even though/while ต้องตามด้วยประโยค",
+            trick: "ทริค: despite / in spite of + Noun/V.ing แปลว่า ทั้งๆ ที่ (ห้ามมี of หลัง despite เด็ดขาด!)"
+        },
+        {
+            q: "The marketing director suggested we rebrand the product; ___, the CEO insisted on keeping the traditional logo.",
+            c: ["moreover", "therefore", "however", "consequently"],
+            a: 2,
+            exp: "ใช้ 'however' บริบทประโยคมีความขัดแย้งกัน (ผอ.การตลาดเสนอให้รีแบรนด์ ขัดแย้งกับ CEO ที่ยืนกรานจะเก็บโลโก้เดิมไว้) therefore และ consequently ใช้บอกความเป็นเหตุเป็นผล",
+            trick: "ทริค: สังเกตเครื่องหมาย Semicolon (;) และ Comma (,) กลุ่มคำเชื่อม Transition word ที่แสดงความขัดแย้งและใช้เครื่องหมายแบบนี้คือ however, nevertheless"
+        },
+        {
+            q: "___ the flight is fully booked, we can place you on the standby list if there are any no-shows.",
+            c: ["Since", "Unless", "Whereas", "Provided that"],
+            a: 0,
+            exp: "ใช้ 'Since' ในบริบทนี้แปลว่า 'เนื่องจาก' (บอกเหตุผล) เนื่องจากเที่ยวบินเต็ม เราจึงใส่ชื่อคุณไว้ในลิสต์สแตนด์บาย",
+            trick: "ทริค: Since ไม่ได้แปลว่า 'ตั้งแต่' อย่างเดียว ในบริบทธุรกิจมักแปลว่า 'เนื่องจาก/เพราะว่า' (เหมือน Because, As)"
+        },
+        {
+            q: "You will not be granted access to the sterile area ___ you display your airport ID badge prominently.",
+            c: ["if", "unless", "provided", "assuming"],
+            a: 1,
+            exp: "ใช้ 'unless' (ถ้าไม่ / เว้นเสียแต่ว่า) ประโยคหมายถึง คุณจะไม่ได้รับอนุญาตให้เข้าพื้นที่หวงห้าม 'เว้นเสียแต่ว่า' คุณจะโชว์บัตรประจำตัว",
+            trick: "ทริค: Unless = If...not ตามด้วยประโยคบอกเล่าเสมอ เพราะตัวมันเองมีความหมายปฏิเสธอยู่แล้ว"
+        },
+        {
+            q: "___ we upgrade our reservation system, we will continue to lose customers to our competitors.",
+            c: ["Until", "If", "Unless", "As long as"],
+            a: 2,
+            exp: "ใช้ 'Unless' (ถ้าไม่) ความหมายคือ: 'ถ้าเราไม่อัปเกรดระบบการจอง เราจะสูญเสียลูกค้าให้คู่แข่งต่อไป' (เป็นเงื่อนไขเชิงลบ)",
+            trick: "ทริค: แปลความหมายประโยคหลังก่อน (we will continue to lose...) มันเป็นผลลบ ดังนั้นเงื่อนไขข้างหน้าต้องเป็น 'ถ้าไม่ทำสิ่งนี้...'"
+        },
+        {
+            q: "___ completing the comprehensive training program, the new recruits were assigned to the front desk.",
+            c: ["Before", "Upon", "During", "While"],
+            a: 1,
+            exp: "ใช้ 'Upon' โครงสร้าง Upon + V.ing (Upon completing) แปลว่า 'ทันทีที่ทำเสร็จ' เป็นภาษาทางการระดับสูงแทนคำว่า After / When",
+            trick: "ทริค: เจอ V.ing โดดๆ หลังช่องว่าง ให้เล็ง Upon / After / Before ไว้ก่อน บริบทนี้หมายถึง 'เมื่อเรียนจบปุ๊บก็ถูกส่งไปทำงานปั๊บ' Upon จึงสวยงามที่สุด"
+        },
+        {
+            q: "The candidate possesses exceptional linguistic skills; ___, her background in public speaking makes her an ideal MC for the event.",
+            c: ["furthermore", "conversely", "nevertheless", "otherwise"],
+            a: 0,
+            exp: "ใช้ 'furthermore' (นอกจากนี้/ยิ่งไปกว่านั้น) ใช้เสริมข้อมูลไปในทิศทางเดียวกัน (เก่งภาษา + เป็น MC ได้ = เป็นแง่บวกทั้งคู่)",
+            trick: "ทริค: ถ้าข้อมูลสองประโยคสนับสนุนกัน (บวกไปบวก) ให้ใช้ furthermore, moreover, in addition"
+        },
+        {
+            q: "Employees are allowed to work remotely ___ they maintain their productivity levels and meet all deadlines.",
+            c: ["even if", "in case", "provided that", "as though"],
+            a: 2,
+            exp: "ใช้ 'provided that' (โดยมีเงื่อนไขว่า / ตราบใดที่) เป็น Conjunction ระดับทางการเทียบเท่า as long as หรือ on the condition that",
+            trick: "ทริค: Provided that / Providing that ในข้อสอบ TOEIC ให้แปลง่ายๆ ว่า 'มีข้อแม้ว่า... / ถ้า...'"
+        },
+        {
+            q: "Not only ___ the baggage handling system malfunction, but the PA system also went offline.",
+            c: ["did", "do", "has", "does"],
+            a: 0,
+            exp: "ใช้ 'did' นี่คือกฎ Inversion เมื่อ Not only ขึ้นต้นประโยค ต้องสลับเอา กริยาช่วย(Auxiliary) มาไว้หน้าประธาน สังเกตจาก went offline (อดีต) กริยาช่วยจึงต้องเป็น did",
+            trick: "ทริค: Not only วางหน้าประโยคเมื่อไหร่ ประโยคนั้นต้องเรียงเหมือนประโยคคำถาม (Not only + กริยาช่วย + ประธาน + กริยาแท้)"
+        },
+        {
+            q: "___ being heavily criticized by the press, the airline's new policy was enthusiastically embraced by shareholders.",
+            c: ["Although", "Notwithstanding", "However", "Because of"],
+            a: 1,
+            exp: "ใช้ 'Notwithstanding' เป็นบุพบท/คำเชื่อมระดับ C2 มีความหมายเหมือน despite/in spite of แปลว่า 'ทั้งๆ ที่' ตามด้วย V.ing หรือ Noun",
+            trick: "ทริค: Notwithstanding เป็นคำขั้นสูง ถ้าในตัวเลือกมี Although (ต้องตามด้วยประโยค) เราจะใช้ไม่ได้ เพราะหลังช่องว่างคือ being (V.ing)"
+        },
+        {
+            q: "The delay was caused not by a mechanical failure, ___ by a sudden change in air traffic control regulations.",
+            c: ["or", "nor", "but", "and"],
+            a: 2,
+            exp: "ใช้ 'but' โครงสร้าง Correlative Conjunction คือ 'not... but...' (ไม่ใช่... แต่เป็น...)",
+            trick: "ทริค: เจอ 'not' นำหน้ากลุ่มคำแรก ให้หา 'but' มารับในกลุ่มคำที่สองเสมอ (ไม่ได้เกิดจากอันนี้ แต่เกิดจากอันนี้)"
+        },
+        {
+            q: "The supervisor requested that the documents be finalized early ___ the auditors arrive unannounced.",
+            c: ["so that", "in order to", "lest", "in case"],
+            a: 3,
+            exp: "ใช้ 'in case' (เผื่อว่า / ในกรณีที่) บริบทคือ ให้เตรียมเอกสารไว้แต่เนิ่นๆ 'เผื่อว่า' ผู้ตรวจสอบบัญชีจะมาแบบไม่บอกล่วงหน้า",
+            trick: "ทริค: in case + ประโยค ใช้บอกการเตรียมพร้อมรับมือกับสิ่งที่ 'อาจจะ' เกิดขึ้นในอนาคต"
+        },
+        {
+            q: "___ you require any further assistance with your application, please do not hesitate to contact our HR department.",
+            c: ["Should", "If", "Had", "Were"],
+            a: 0,
+            exp: "ใช้ 'Should' เป็นการละ If (If-clause omission) ใน First Conditional แบบทางการ (If you should require... -> Should you require...)",
+            trick: "ทริค: ถ้าเจอช่องว่างขึ้นต้นประโยค ตามด้วย S + V.inf (you require) เดาได้เลยว่าเป็นการละ If ให้ตอบ Should ทันที"
+        },
+        {
+            q: "The flight attendant handed out the immigration forms ___ the passengers could fill them out before landing.",
+            c: ["because", "so that", "due to", "as a result"],
+            a: 1,
+            exp: "ใช้ 'so that' (เพื่อที่ว่า) ตามด้วยประโยค (Subject + Modal + V.) เพื่อบอกจุดประสงค์ (แจกใบตม. เพื่อที่ผู้โดยสารจะได้กรอก)",
+            trick: "ทริค: โครงสร้าง so that + Subject + can/could/will/would + V.inf ใช้บอกเป้าหมายหรือวัตถุประสงค์ในการกระทำ"
+        },
+        {
+            q: "___ the bad weather, the community tourism project launch in Ban Tha Kho proceeded as planned.",
+            c: ["Despite", "Although", "Because of", "Even though"],
+            a: 0,
+            exp: "ใช้ 'Despite' เพราะ the bad weather เป็นกลุ่มคำนาม (Noun Phrase) ประโยคมีความขัดแย้ง (อากาศแย่ แต่งานดำเนินตามแผน)",
+            trick: "ทริค: ตัด Although และ Even though ทิ้งได้เลยเพราะต้องตามด้วยประโยค (S+V) ส่วน Because of แปลว่า 'เพราะ' ซึ่งความหมายไม่เข้ากับบริบท"
+        },
+        {
+            q: "Neither the operations manager ___ the shift supervisors were aware of the updated security protocol.",
+            c: ["or", "and", "nor", "but"],
+            a: 2,
+            exp: "ใช้ 'nor' กฎตายตัวของ Correlative Conjunction คือ Neither ต้องคู่กับ nor เสมอ (ไม่ทั้ง...และ...)",
+            trick: "ทริค: คู่สร้างคู่สม: Either...or / Neither...nor / Not only...but also / Both...and"
+        }
+    ];
+
+    let currentQuestions = [];
+    let currentIdx = 0;
+    let score = 0;
+
+    // สุ่มข้อสอบ 10 ข้อเมื่อโหลดหน้าเว็บ
+    function initQuiz() {
+        // Shuffle array and pick 10
+        currentQuestions = [...allQuestions].sort(() => 0.5 - Math.random()).slice(0, 10);
+        currentIdx = 0;
+        score = 0;
+        document.getElementById('result-screen').style.display = 'none';
+        document.getElementById('quiz-screen').style.display = 'block';
+        showQuestion();
+    }
+
+    function showQuestion() {
+        const qData = currentQuestions[currentIdx];
+        
+        // Reset UI
+        document.getElementById('progress').innerText = `Question ${currentIdx + 1} of 10`;
+        document.getElementById('question').innerText = `${currentIdx + 1}. ${qData.q}`;
+        document.getElementById('analysis').style.display = 'none';
+        document.getElementById('next-btn').style.display = 'none';
+        
+        const choicesDiv = document.getElementById('choices');
+        choicesDiv.innerHTML = '';
+        
+        // Render Choices
+        qData.c.forEach((choiceText, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.innerText = choiceText;
+            btn.onclick = () => checkAnswer(idx, btn);
+            choicesDiv.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selectedIdx, btnElement) {
+        const qData = currentQuestions[currentIdx];
+        const buttons = document.querySelectorAll('.choice-btn');
+        
+        // Disable all buttons
+        buttons.forEach(b => b.disabled = true);
+        
+        const isCorrect = (selectedIdx === qData.a);
+        if(isCorrect) {
+            btnElement.classList.add('correct');
+            score++;
+            document.getElementById('analysis-title').innerHTML = '✅ ถูกต้อง! เก่งมากครับ';
+            document.getElementById('analysis-title').style.color = 'var(--success)';
+        } else {
+            btnElement.classList.add('wrong');
+            buttons[qData.a].classList.add('correct'); // Highlight correct answer
+            document.getElementById('analysis-title').innerHTML = '❌ พลาดไปนิดนึง มาดูเหตุผลกัน';
+            document.getElementById('analysis-title').style.color = 'var(--error)';
+        }
+
+        // Show Analysis
+        document.getElementById('analysis-desc').innerHTML = `<strong>เฉลย: ${qData.c[qData.a]}</strong><br><br>${qData.exp}`;
+        document.getElementById('analysis-trick').innerHTML = `💡 ${qData.trick}`;
+        document.getElementById('analysis').style.display = 'block';
+        
+        // Show Next Button
+        const nextBtn = document.getElementById('next-btn');
+        nextBtn.style.display = 'block';
+        nextBtn.innerText = (currentIdx === 9) ? "ดูผลคะแนน" : "ต่อไป";
+    }
+
+    function nextQuestion() {
+        currentIdx++;
+        if(currentIdx < 10) {
+            showQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        document.getElementById('quiz-screen').style.display = 'none';
+        const resultScreen = document.getElementById('result-screen');
+        resultScreen.style.display = 'block';
+        document.getElementById('final-score').innerText = `${score}/10`;
+    }
+
+    // Start Quiz
+    window.onload = initQuiz;
+
+</script>
+</body>
+</html>
